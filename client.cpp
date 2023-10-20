@@ -1,49 +1,89 @@
 #include <iostream>
 #include <string>
+#include <cstdlib>
 #include <cstring>
-#include <arpa/inet.h>
-#include <sys/socket.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 int main() {
     int clientSocket;
-    struct sockaddr_in serverAddr;
+    int port = 12345; // Port number to connect to
     char buffer[1024];
 
+    // Create a socket
     clientSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (clientSocket < 0) {
-        perror("Error in socket");
+    if (clientSocket == -1) {
+        std::cerr << "Error creating client socket" << std::endl;
         exit(1);
     }
-    std::cout << "Client socket created.\n";
 
+    // Configure the server address structure
+    struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(8080);
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-    if (connect(clientSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-        perror("Error in connection");
+    serverAddr.sin_port = htons(port);
+    serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // Server IP address
+
+    // Connect to the server
+    if (connect(clientSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1) {
+        std::cerr << "Error connecting to the server" << std::endl;
         exit(1);
     }
-    std::cout << "Connected to server.\n";
-    std::cout << "First\n";
-    
-    while (true) {
-        std::string message;
-        std::cout << "Client: ";
-        getline(std::cin, message);
-        send(clientSocket, message.c_str(), message.size(), 0);
-        if (message == "exit") {
-            std::cout << "Client disconnected.\n";
-            break;
-        }
-        recv(clientSocket, buffer, 1024, 0);
-        std::cout << "Server: " << buffer << std::endl;
-        if (std::string(buffer) == "exit") {
-            std::cout << "Server disconnected.\n";
-            break;
-        }
-    }
 
+	// Receive and display the game request
+	memset(buffer, 0, sizeof(buffer));
+	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+	if (bytesReceived <= 0) {
+		std::cerr << "Server disconnected" << std::endl;
+		exit(0);
+	}
+	std::cout << "Server: " << buffer << std::endl;
+
+	// Get the client's response
+	std::string response;
+	std::cout << "Your response: ";
+	std::getline(std::cin >> std::ws, response);
+	if (!response.empty() && response.back() == '\n') {
+		response.pop_back();
+	} 
+
+	send(clientSocket, response.c_str(), response.size(), 0);
+	
+	memset(buffer, 0, sizeof(buffer));
+	bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+	if (bytesReceived <= 0) {
+		std::cerr << "Server disconnercted" << std::endl;
+		exit(0);
+	}
+	std::cout << buffer << std::endl;
+
+
+
+
+    while (false) {
+        std::string message;
+        std::cout << "Enter a message: ";
+        std::getline(std::cin, message);
+
+        send(clientSocket, message.c_str(), message.size(), 0);
+
+
+	if (message == "exit") break;
+
+        memset(buffer, 0, sizeof(buffer));
+        int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
+        if (bytesReceived <= 0) {
+            std::cerr << "Server disconnected" << std::endl;
+            break;
+        }
+        std::cout << "Server: " << buffer << std::endl;
+   
+	if (std::string(buffer) == "exit") break;
+
+ }
+
+    // Close the socket
     close(clientSocket);
 
     return 0;
