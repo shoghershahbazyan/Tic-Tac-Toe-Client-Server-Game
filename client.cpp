@@ -1,12 +1,9 @@
-#include <iostream>
 #include <string>
 #include <cstdlib>
-#include <cstring>
 #include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "utility.h"
 int main() {
     int clientSocket;
     int port = 12345; // Port number to connect to
@@ -32,37 +29,24 @@ int main() {
     }
 
 	// Receive and display the game request
-	memset(buffer, 0, sizeof(buffer));
-	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-	if (bytesReceived <= 0) {
-		std::cerr << "Server disconnected" << std::endl;
-		exit(0);
-	}
+	recvData(clientSocket, buffer, sizeof(buffer));
 	std::cout << "Server: " << buffer << std::endl;
 
 	// Get the client's response
 	std::string response;
 	std::cout << "Your response: ";
 	std::getline(std::cin >> std::ws, response);
-	if (!response.empty() && response.back() == '\n') {
-		response.pop_back();
-	} 
-
 	send(clientSocket, response.c_str(), response.size(), 0);
 	
-	memset(buffer, 0, sizeof(buffer));
-	bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-	if (bytesReceived <= 0) {
-		std::cerr << "Server disconnercted" << std::endl;
-		exit(0);
-	}
+	recvData(clientSocket, buffer, sizeof(buffer));
 	std::cout << buffer << std::endl;
 
 
+    while (true) {
+        
 
 
-    while (false) {
-        std::string message;
+	std::string message;
         std::cout << "Enter a message: ";
         std::getline(std::cin, message);
 
