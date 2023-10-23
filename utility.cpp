@@ -35,3 +35,12 @@ bool checkReadyStatus(const int clientSocket1, const int clientSocket2){
 
 	return startGame;
 }
+
+bool  processMove(std::string& input, int(& arr)[2])
+{
+	std::istringstream iss(input);
+	if (iss >> arr[0] >> arr[1]) {
+		return true;	
+	}
+	return false;
+}

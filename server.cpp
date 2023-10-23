@@ -1,29 +1,23 @@
 #include <string>
 #include <cstdlib>
 #include <unistd.h>
+#include <thread>
+#include <functional>
 
 #include "utility.h"
 #include "game.h"
-class Player
+
+void handlePlayer(TicTacToe& game, int clientSocket, char player) 
 {
-	private:
-		bool ready;
-		std::string name;
-	public:
-		Player(std::string& str) : ready{false}, name{str} {} 
-		void setReady(){ ready = true; }
-		bool getStatus() { return ready;}
-};
-/*
-class Client
-{
-	private:
-		int sockNum;
-		struct sockAddr;	
-	public:
-		
-};
-*/
+//	while (true) {
+		std::string message = game.displayBoard();
+		std::cout << message << std::endl;
+		send(clientSocket, message.c_str(), message.size(), 0);
+		char buffer[1024];
+		recvData(clientSocket, buffer, sizeof(buffer));
+		std::cout << "Player " << player << " made a move " << buffer << std::endl;	
+//	}
+}
 
 int main() {
     int serverSocket, clientSocket1, clientSocket2;
@@ -66,23 +60,21 @@ int main() {
 
     while (startGame) {
 	TicTacToe game;
-	int row, col;
-	bool gameWon{false};
-		while (true) {
-			std::string board = game.displayBoard();
-			send(clientSocket1, board.c_str(), sizeof(board), 0);
-			send(clientSocket2, board.c_str(), sizeof(board), 0);
-			std::cout << board << std::endl;
-			break;
-		}
-		break;    
+	std::cout << "Let's play Tic-Tac-Toe!" << std::endl;
+	send(clientSocket1, "X", 1, 0);
+	send(clientSocket2, "O", 1, 0);
+	std::thread threadX(handlePlayer, std::ref(game), clientSocket1, 'X');
+	std::thread threadO(handlePlayer, std::ref(game), clientSocket2, 'O');
+  
+	threadX.join();
+	threadO.join();
+
+ 
 	}
 
     // Close the sockets
     close(clientSocket1);
     close(clientSocket2);
     close(serverSocket);
-
-    return 0;
 }
 
