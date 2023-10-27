@@ -87,3 +87,84 @@ void sendData(const int clientSocket1, const int clientSocket2, char player1, ch
 	send(clientSocket1, board1.c_str(), board1.size(), 0);
 	send(clientSocket2, board2.c_str(), board2.size(), 0);
 }
+
+void play(int clientSocket1, int clientSocket2, TicTacToe& game)
+{
+	bool flag = true;
+	bool gameOver{false};
+	std::string board;
+	while (!gameOver) {
+		board = game.displayBoard();
+		std::cout << board << std::endl;
+		char buffer[1024];
+		int row{}, col{};
+		if (flag) {
+			flag = false;
+			sendData(clientSocket1, clientSocket2, 'X', 'O', board);
+			recvData(clientSocket1, buffer, sizeof(buffer));
+			toInt(std::string(buffer), row, col);
+			game.makeMove(row, col, 'X', gameOver);
+			send(clientSocket2, buffer, sizeof(buffer), 0);
+		} else {
+			flag = true;
+			sendData(clientSocket2, clientSocket1, 'O', 'X', board);
+			recvData(clientSocket2, buffer, sizeof(buffer));
+			toInt(std::string(buffer), row, col);
+			game.makeMove(row, col,'O', gameOver);
+			send(clientSocket1, buffer, sizeof(buffer), 0);
+		}
+		system("clear");
+		board = game.displayBoard();
+	}
+	std::cout << board << std::endl;
+	
+	std::cout << "\n__GAME OVER__" << std::endl;
+	send(clientSocket1, board.c_str(), board.size(), 0);
+	send(clientSocket2, board.c_str(), board.size(), 0);
+}
+
+void sendRecv(int client, std::vector<std::vector<char>>& board, const char player)
+{
+	bool gameOver{false};
+	char buffer[1024];
+	char winner{};
+	while (!gameOver) {
+		char buffeddr[1024];
+		recvData(client, buffer, sizeof(buffer));
+		system("clear");
+		std::cout << buffer << std::endl;
+		size_t last = std::strlen(buffer);
+		if (last > 0 && buffer[last -1] == ':') {
+			std::string message;
+			do {
+				std::getline(std::cin, message);
+				if (message == "exit") break;
+			} while (!processMove(message, board, player));
+			send(client, message.c_str(), message.size(), 0);
+			if (message == "exit") break;
+			gameOver = checkWin(board);
+			if (gameOver) {
+				winner = player;
+			}
+		} else {
+			recvData(client, buffer, sizeof(buffer));
+			char player2 = (player == 'X' ? 'O' : 'X');
+			std::cout << player2 << "  made a move " << std::endl;
+			std::string tmp = std::string(buffer); 
+			processMove(tmp, board, player2);
+			gameOver = checkWin(board);
+			if (gameOver) {
+				winner = player2;
+			}
+		}
+	}
+	recvData(client, buffer, sizeof(buffer));
+	system("clear");
+	std::cout << buffer << std::endl;
+	if (winner == player) {
+		std::cout << "___You won___" << std::endl;
+	} else {
+		std::cout << "___You lose___" << std::endl;
+	}
+	std::cout << "__GAME OVER__" << std::endl;
+}

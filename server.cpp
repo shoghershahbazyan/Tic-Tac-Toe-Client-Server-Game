@@ -8,7 +8,7 @@
 
 #include "utility.h"
 #include "game.h"
-
+/*
 void play(int clientSocket1, int clientSocket2, TicTacToe& game)
 {
 	bool flag = true;
@@ -40,7 +40,7 @@ void play(int clientSocket1, int clientSocket2, TicTacToe& game)
 	send(clientSocket1, board.c_str(), board.size(), 0);
 	send(clientSocket2, board.c_str(), board.size(), 0);
 }
-
+*/
 int main() {
     int serverSocket, clientSocket1, clientSocket2;
     int port = 12345; // Port number to listen on

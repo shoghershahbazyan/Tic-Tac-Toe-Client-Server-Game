@@ -7,50 +7,6 @@
 
 #include "utility.h"
 
-void sendRecv(int client, std::vector<std::vector<char>>& board, const char player)
-{
-	bool gameOver{false};
-	char buffer[1024];
-	char winner{};
-	while (!gameOver) {
-		char buffeddr[1024];
-		recvData(client, buffer, sizeof(buffer));
-		std::cout << buffer << std::endl;
-		size_t last = std::strlen(buffer);
-		if (last > 0 && buffer[last -1] == ':') {
-			std::string message;
-			do {
-				std::getline(std::cin, message);
-				if (message == "exit") break;
-			} while (!processMove(message, board, player));
-			send(client, message.c_str(), message.size(), 0);
-			if (message == "exit") break;
-			gameOver = checkWin(board);
-			if (gameOver) {
-				winner = player;
-			}
-		} else {
-			recvData(client, buffer, sizeof(buffer));
-			char player2 = (player == 'X' ? 'O' : 'X');
-			std::cout << player2 << "  made a move " << std::endl;
-			std::string tmp = std::string(buffer); 
-			processMove(tmp, board, player2);
-			gameOver = checkWin(board);
-			if (gameOver) {
-				winner = player2;
-			}
-		}
-	}
-	recvData(client, buffer, sizeof(buffer));
-	std::cout << buffer << std::endl;
-	if (winner == player) {
-		std::cout << "Congrads you won" << std::endl;
-	} else {
-		std::cout << "You lose" << std::endl;
-	}
-	std::cout << "\n___________GAME OVER_________" << std::endl;
-}
-
 std::condition_variable cv;
 int main() {
     int clientSocket;
