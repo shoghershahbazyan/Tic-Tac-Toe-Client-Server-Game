@@ -36,11 +36,26 @@ bool checkReadyStatus(const int clientSocket1, const int clientSocket2){
 	return startGame;
 }
 
-bool  processMove(std::string& input, int(& arr)[2])
+bool toInt(const std::string& input, int& row, int& col)
 {
 	std::istringstream iss(input);
-	if (iss >> arr[0] >> arr[1]) {
-		return true;	
-	}
+	if (iss >> row >> col) {
+		return true;
+	}	
+	std::cout << "Invalid move!" << std::endl;
 	return false;
+}
+
+bool  processMove(const std::string& input, std::vector<std::vector<char>>& board)
+{
+	int row{}, col{};
+	if (!toInt(input, row, col)) {
+		return false;	
+	}
+	if (row < 0 || row >= 3 || col < 0 || col >= 3 || board[row][col] != ' ') {
+	    std::cout << "Invalid move. Try again." << std::endl;
+	    return false;
+	}
+	board[row][col] = '-';
+	return true;
 }

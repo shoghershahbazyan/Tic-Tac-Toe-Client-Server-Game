@@ -28,6 +28,7 @@ bool TicTacToe::makeMove(int row, int col)
 
 	board[row][col] = currentPlayer;
 	currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+	std::cout << "The move done. The player vas " << currentPlayer << std::endl;
 	return true;
 }
 

@@ -2,9 +2,44 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <thread>
+#include <condition_variable>
 
 #include "utility.h"
-#include "game.h"
+
+void sendRecv(int client, std::vector<std::vector<char>>& board)
+{
+	bool gameOver{false};
+	char buffer[1024];
+	while (!gameOver) {
+		char buffeddr[1024];
+		recvData(client, buffer, sizeof(buffer));
+		std::cout << buffer << std::endl;
+		size_t last = std::strlen(buffer);
+		if (last > 0 && buffer[last -1] == ':') {
+			std::string message;
+			do {
+				std::getline(std::cin, message);
+				if (message == "exit") break;
+			} while (!processMove(message, board));
+			// Check valid move to do
+			send(client, message.c_str(), message.size(), 0);
+			if (message == "exit") break;
+		} else {
+			recvData(client, buffer, sizeof(buffer));
+			std::cout << "Oponent made a move: " << buffer << std::endl;
+			std::string tmp = std::string(buffer); 
+			processMove(tmp, board);
+		}
+		//recvData(client, buffer, sizeof(buffer));
+		//if (buffer[0] == 'X' || buffer[0] == 'O' || buffer[0] == 'N') {
+		//	gameOver = true;
+		//}
+	}
+	//std::cout << "Player " << buffer[0] << " winns" <<  "\n___________GAME OVER_________" << std::endl;
+}
+
+std::condition_variable cv;
 int main() {
     int clientSocket;
     int port = 12345; // Port number to connect to
@@ -45,43 +80,15 @@ int main() {
 
     //while (true) {
         std::cout << "Let's play Tic-Tac-Toe!" << std::endl;
-	// Create the instance of the game class
-	TicTacToe game;
-	
 	// Set the name of the player
 	char playerName{};
 	recvData(clientSocket, buffer, 1);
 	playerName = buffer[0];
-	std::string startMove = "Player " + std::string(1, playerName) +  ", enter your move (row and column): ";
-	bool makeMove = playerName == 'X' ? true : false;
-	// Sart the game
-	while (true) {
-		recvData(clientSocket, buffer, sizeof(buffer));
-		std::cout << buffer << std::endl;
-		std::cout << startMove << std::endl;		
-		
-		std::string message;
-		std::getline(std::cin, message);
-
-		send(clientSocket, message.c_str(), message.size(), 0);
-
-/*
-		if (message == "exit") break;
-
-		memset(buffer, 0, sizeof(buffer));
-		int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-		if (bytesReceived <= 0) {
-		    std::cerr << "Server disconnected" << std::endl;
-		    break;
-		}
-		std::cout << "Server: " << buffer << std::endl;
-	   
-		if (std::string(buffer) == "exit") break;
-		*/
-	}
-	//break;
- //}
-
+	std::vector<std::vector<char>> board(3, std::vector<char>(3, ' '));
+	cv.notify_one();
+	std::thread thread1(sendRecv, clientSocket, std::ref(board));	
+	thread1.join();
+	
     // Close the socket
     close(clientSocket);
 }
