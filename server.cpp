@@ -13,67 +13,32 @@ void play(int clientSocket1, int clientSocket2, TicTacToe& game)
 {
 	bool flag = true;
 	bool gameOver{false};
-	char winner{'a'};
+	std::string board;
 	while (!gameOver) {
-		std::string board = game.displayBoard();
+		board = game.displayBoard();
 		std::cout << board << std::endl;
 		char buffer[1024];
 		int row{}, col{};
 		if (flag) {
 			flag = false;
-			std::string boardX = board + "\nServer: Player X make move:";
-			std::string boardO = board + "\nServer: Player O please whait...";
-			send(clientSocket1, boardX.c_str(), boardX.size(), 0);
-			send(clientSocket2, boardO.c_str(), boardO.size(), 0);
+			sendData(clientSocket1, clientSocket2, 'X', 'O', board);
 			recvData(clientSocket1, buffer, sizeof(buffer));
-			std::cout << "Player X: " << buffer << std::endl;
 			toInt(std::string(buffer), row, col);
-			if (game.makeMove(row, col)) {
-				if (game.checkWin()) {
-					std::cout << game.displayBoard() << std::endl;
-					std::cout << "Player X wins!! " << std::endl;
-					gameOver = true;
-					winner = 'X';
-					break; // break;
-				} else if (game.checkDraw()) {
-					std::cout << game.displayBoard() << std::endl;
-					std::cout << "It's a Draw!" << std::endl;
-					gameOver = true;
-					break; // winner = 'N';
-				}
-			}
-			
+			game.makeMove(row, col, 'X', gameOver);
 			send(clientSocket2, buffer, sizeof(buffer), 0);
 		} else {
 			flag = true;
-			std::string boardX = board + "\nServer: Player X please whait...";
-			std::string boardO = board + "\nServer: Player O make a move:";
-			send(clientSocket1, boardX.c_str(), boardX.size(), 0);
-			send(clientSocket2, boardO.c_str(), boardO.size(), 0);
+			sendData(clientSocket2, clientSocket1, 'O', 'X', board);
 			recvData(clientSocket2, buffer, sizeof(buffer));
 			toInt(std::string(buffer), row, col);
-			game.makeMove(row, col);
-			std::cout << "Player O: " << buffer << std::endl;
-			if (game.makeMove(row, col)) {
-				if (game.checkWin()) {
-					std::cout << game.displayBoard() << std::endl;
-					std::cout << "Player O wins!! " << std::endl;
-					gameOver = true;
-					break; // winner = 'O';
-				} else if (game.checkDraw()) {
-					std::cout << game.displayBoard() << std::endl;
-					std::cout << "It's a Draw!" << std::endl;
-					gameOver = true;
-					break; //winner = 'N';
-				}
-			}
+			game.makeMove(row, col,'O', gameOver);
 			send(clientSocket1, buffer, sizeof(buffer), 0);
 		}
-		// send the game status X, Y, N
-		//buffer[0] = winner;
-		//send(clientSocket1, buffer, 1, 0);
-		//send(clientSocket2, buffer, 1, 0); 
+		board = game.displayBoard();
 	}
+	std::cout << "\n___________GAME OVER___________" << std::endl;
+	send(clientSocket1, board.c_str(), board.size(), 0);
+	send(clientSocket2, board.c_str(), board.size(), 0);
 }
 
 int main() {
@@ -115,17 +80,20 @@ int main() {
 	char buffer[1024]; 
 	// Check if the boath players are ready to play the game
 	bool startGame = checkReadyStatus(clientSocket1, clientSocket2);
-
-	std::cout << "Let's play Tic-Tac-Toe!" << std::endl;
-	// Set the players names
-	send(clientSocket1, "X", 1, 0);
-	send(clientSocket2, "O", 1, 0);
-	TicTacToe game;
+	if (!startGame) {
+		std::cout << "Players are not ready to paly!\n Bye" << std::endl;
+		return 0;
+	} else {
+		std::cout << "Let's play Tic-Tac-Toe!" << std::endl;
+		// Set the players names
+		send(clientSocket1, "X", 1, 0);
+		send(clientSocket2, "O", 1, 0);
+		TicTacToe game;
 	
-	std::thread threadX(play, clientSocket1, clientSocket2, std::ref(game));
+		std::thread threadX(play, clientSocket1, clientSocket2, std::ref(game));
   
-	threadX.join();
- 
+		threadX.join();
+ 	}
 
     // Close the sockets
     close(clientSocket1);

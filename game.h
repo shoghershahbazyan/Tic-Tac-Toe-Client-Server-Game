@@ -19,6 +19,8 @@ public:
  
     // Method to start the game
     void playGame();
+    // Method to make one move
+    void makeMove(const int, const int, char, bool&);
     private:
     std::vector<std::vector<char>> board;
     char currentPlayer;

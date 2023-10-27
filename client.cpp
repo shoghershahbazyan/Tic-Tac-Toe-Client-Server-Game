@@ -7,10 +7,11 @@
 
 #include "utility.h"
 
-void sendRecv(int client, std::vector<std::vector<char>>& board)
+void sendRecv(int client, std::vector<std::vector<char>>& board, const char player)
 {
 	bool gameOver{false};
 	char buffer[1024];
+	char winner{};
 	while (!gameOver) {
 		char buffeddr[1024];
 		recvData(client, buffer, sizeof(buffer));
@@ -21,22 +22,33 @@ void sendRecv(int client, std::vector<std::vector<char>>& board)
 			do {
 				std::getline(std::cin, message);
 				if (message == "exit") break;
-			} while (!processMove(message, board));
-			// Check valid move to do
+			} while (!processMove(message, board, player));
 			send(client, message.c_str(), message.size(), 0);
 			if (message == "exit") break;
+			gameOver = checkWin(board);
+			if (gameOver) {
+				winner = player;
+			}
 		} else {
 			recvData(client, buffer, sizeof(buffer));
-			std::cout << "Oponent made a move: " << buffer << std::endl;
+			char player2 = (player == 'X' ? 'O' : 'X');
+			std::cout << player2 << "  made a move " << std::endl;
 			std::string tmp = std::string(buffer); 
-			processMove(tmp, board);
+			processMove(tmp, board, player2);
+			gameOver = checkWin(board);
+			if (gameOver) {
+				winner = player2;
+			}
 		}
-		//recvData(client, buffer, sizeof(buffer));
-		//if (buffer[0] == 'X' || buffer[0] == 'O' || buffer[0] == 'N') {
-		//	gameOver = true;
-		//}
 	}
-	//std::cout << "Player " << buffer[0] << " winns" <<  "\n___________GAME OVER_________" << std::endl;
+	recvData(client, buffer, sizeof(buffer));
+	std::cout << buffer << std::endl;
+	if (winner == player) {
+		std::cout << "Congrads you won" << std::endl;
+	} else {
+		std::cout << "You lose" << std::endl;
+	}
+	std::cout << "\n___________GAME OVER_________" << std::endl;
 }
 
 std::condition_variable cv;
@@ -70,25 +82,24 @@ int main() {
 
 	// Get the client's response
 	std::string response;
-	std::cout << "Your response: ";
+	std::cout << "Your response: (yes/no) ";
 	std::getline(std::cin >> std::ws, response);
 	send(clientSocket, response.c_str(), response.size(), 0);
-	
 	recvData(clientSocket, buffer, sizeof(buffer));
 	std::cout << buffer << std::endl;
 
 
-    //while (true) {
-        std::cout << "Let's play Tic-Tac-Toe!" << std::endl;
-	// Set the name of the player
-	char playerName{};
-	recvData(clientSocket, buffer, 1);
-	playerName = buffer[0];
-	std::vector<std::vector<char>> board(3, std::vector<char>(3, ' '));
-	cv.notify_one();
-	std::thread thread1(sendRecv, clientSocket, std::ref(board));	
-	thread1.join();
-	
+    	if (response == "yes") {
+  	      std::cout << "Let's play Tic-Tac-Toe!" << std::endl;
+		// Set the name of the player
+		char playerName{};
+		recvData(clientSocket, buffer, 1);
+		playerName = buffer[0];
+		std::vector<std::vector<char>> board(3, std::vector<char>(3, ' '));
+		cv.notify_one();
+		std::thread thread1(sendRecv, clientSocket, std::ref(board), playerName);	
+		thread1.join();
+	}
     // Close the socket
     close(clientSocket);
 }

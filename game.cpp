@@ -22,13 +22,12 @@ std::string TicTacToe::displayBoard()
 bool TicTacToe::makeMove(int row, int col)
 {
 	if (row < 0 || row >= 3 || col < 0 || col >= 3 || board[row][col] != ' ') {
-	    std::cout << "Invalid move. Try again." << std::endl;
+	    std::cout << "Invalid move. Try again. game.cpp" << std::endl;
 	    return false;
 	}
 
 	board[row][col] = currentPlayer;
 	currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
-	std::cout << "The move done. The player vas " << currentPlayer << std::endl;
 	return true;
 }
 
@@ -96,4 +95,19 @@ void TicTacToe::playGame()
 	    std::cout << displayBoard() << std::endl;
 	}
 }
-	
+
+// Method to process one move
+void TicTacToe::makeMove(const int row, const int col, char currentPlayer, bool& gameOver) 
+{
+	   if (makeMove(row, col)) {
+		if (checkWin()) {
+			std::cout << displayBoard() << std::endl;
+			std::cout << "Player " << currentPlayer << " wins!" << std::endl;
+		   	gameOver = true;
+		} else if (checkDraw()) {
+			std::cout << displayBoard() << std::endl;
+			std::cout << "It's a draw!" << std::endl;
+			gameOver = true;
+		}
+	}
+}
