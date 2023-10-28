@@ -4,31 +4,31 @@ Tic-Tac-Toe Console Game
 ## Game description
 
 ### Game Board and Display:
-- [*] The game provides a 3x3 grid for playing tic-tac-toe.
-- [x] The grid is displayed on the console.
-- [x] The grid is labeled with row and column indices to help players select their moves.
+-  The game provides a 3x3 grid for playing tic-tac-toe.
+-  The grid is displayed on the console.
+-  The grid is labeled with row and column indices to help players select their moves.
 
 ### Player Input:
-- [x] Players can input their moves in the format (row column) using the console.
-- [x] Input is validated to ensure it's within the valid range (0 to 2) and an unoccupied cell.
+-  Players can input their moves in the format (row column) using the console.
+-  Input is validated to ensure it's within the valid range (0 to 2) and an unoccupied cell.
 
 ### Game Logic:
-- [x] The game correctly detects a win condition when a player has three consecutive symbols in a horizontal, vertical, or diagonal row.
-- [x] The game correctly detects a draw condition when the grid is full, and no player has won.
-- [x] The game allows for continuous play until a win or draw occurs.
+-  The game correctly detects a win condition when a player has three consecutive symbols in a horizontal, vertical, or diagonal row.
+-  The game correctly detects a draw condition when the grid is full, and no player has won.
+-  The game allows for continuous play until a win or draw occurs.
 
 ### Player Turns:
-- [x] Players take turns making moves, starting with Player X.
-- [x] The game displays the current player's turn (X or O) on the console.
+-  Players take turns making moves, starting with Player X.
+-  The game displays the current player's turn (X or O) on the console.
 
 ### Game State Display:
-- [x] The game continuously displays the state of the board after each move, updating the grid with Xs and Os.
+-  The game continuously displays the state of the board after each move, updating the grid with Xs and Os.
 
 ### End Game Display:
-- [x] When the game ends (either by a win or a draw), the program displays a message indicating the winner (X or O) or a draw.
+-  When the game ends (either by a win or a draw), the program displays a message indicating the winner (X or O) or a draw.
 
 ### Error Handling:
-- [x] The program handles any unexpected user inputs gracefully and provides informative error messages.
+-  The program handles any unexpected user inputs gracefully and provides informative error messages.
 
 ## Usage
 Certainly, here's a refactored version of the usage instructions for your Tic-Tac-Toe game:
@@ -116,8 +116,9 @@ bool processMove(const std::string&, std::vector<std::vector<char>>&, const char
 bool checkWin(const std::vector<std::vector<char>>&);	// Check if there's a win condition on the game board, returning true if there's a winner.
 void sendData(const int clientSocket1, const int clientSocket2, char player1, char player2, std::string& board);	// Method to send data to palyer
 void play(int clientSocket1, int clientSocket2, TicTacToe& game);	// Method to pay a game
-void sendRecv(int client, std::vector<std::vector<char>>& board, const char player);	// Method to run the game for client```
+void sendRecv(int client, std::vector<std::vector<char>>& board, const char player);	// Method to run the game for client
+```
 
+## Conclusions
 
-
-
+In conclusion, this Tic-Tac-Toe console game provides a classic and enjoyable gaming experience. With features like a 3x3 grid, player input validation, game logic, and clear displays, it offers a faithful recreation of the traditional game.
