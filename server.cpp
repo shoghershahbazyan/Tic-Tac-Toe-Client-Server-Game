@@ -8,39 +8,7 @@
 
 #include "utility.h"
 #include "game.h"
-/*
-void play(int clientSocket1, int clientSocket2, TicTacToe& game)
-{
-	bool flag = true;
-	bool gameOver{false};
-	std::string board;
-	while (!gameOver) {
-		board = game.displayBoard();
-		std::cout << board << std::endl;
-		char buffer[1024];
-		int row{}, col{};
-		if (flag) {
-			flag = false;
-			sendData(clientSocket1, clientSocket2, 'X', 'O', board);
-			recvData(clientSocket1, buffer, sizeof(buffer));
-			toInt(std::string(buffer), row, col);
-			game.makeMove(row, col, 'X', gameOver);
-			send(clientSocket2, buffer, sizeof(buffer), 0);
-		} else {
-			flag = true;
-			sendData(clientSocket2, clientSocket1, 'O', 'X', board);
-			recvData(clientSocket2, buffer, sizeof(buffer));
-			toInt(std::string(buffer), row, col);
-			game.makeMove(row, col,'O', gameOver);
-			send(clientSocket1, buffer, sizeof(buffer), 0);
-		}
-		board = game.displayBoard();
-	}
-	std::cout << "\n___________GAME OVER___________" << std::endl;
-	send(clientSocket1, board.c_str(), board.size(), 0);
-	send(clientSocket2, board.c_str(), board.size(), 0);
-}
-*/
+
 int main() {
     int serverSocket, clientSocket1, clientSocket2;
     int port = 12345; // Port number to listen on

@@ -1,12 +1,38 @@
 #include "utility.h"
 
 void recvData(int socket, char* buffer, size_t size) {
-	memset(buffer, 0, size);
-	int bytesReceived = recv(socket, buffer, size, 0);
-	if (bytesReceived <= 0) {
-		std::cerr << "Disconnected" << std::endl;
-		exit(0);
-	}
+    // Clear the buffer by setting all its elements to 0
+    memset(buffer, 0, size);
+
+    // Receive data from the socket into the buffer
+    int bytesReceived = recv(socket, buffer, size, 0);
+
+    // Check if there was an issue with the received data
+    if (bytesReceived <= 0) {
+        // If no bytes were received or an error occurred, print an error message
+        std::cerr << "Disconnected" << std::endl;
+        
+        // Exit the program (assuming this function is part of a larger program)
+        exit(0);
+    }
+}
+
+bool toInt(const std::string& input, int& row, int& col)
+{
+    // Create an input string stream to parse the input string
+    std::istringstream iss(input);
+
+    // Try to extract integers from the input stream into 'row' and 'col'
+    if (iss >> row >> col) {
+        // If successful, return true to indicate valid input
+        return true;
+    }
+
+    // If extraction was unsuccessful, print an error message
+    std::cout << "Invalid move!" << std::endl;
+
+    // Return false to indicate invalid input
+    return false;
 }
 
 bool checkReadyStatus(const int clientSocket1, const int clientSocket2){
@@ -36,30 +62,6 @@ bool checkReadyStatus(const int clientSocket1, const int clientSocket2){
 	return startGame;
 }
 
-bool toInt(const std::string& input, int& row, int& col)
-{
-	std::istringstream iss(input);
-	if (iss >> row >> col) {
-		return true;
-	}	
-	std::cout << "Invalid move!" << std::endl;
-	return false;
-}
-
-bool  processMove(const std::string& input, std::vector<std::vector<char>>& board, const char player)
-{
-	int row{}, col{};
-	if (!toInt(input, row, col)) {
-		return false;	
-	}
-	if (row < 0 || row >= 3 || col < 0 || col >= 3 || board[row][col] != ' ') {
-	    std::cout << "Invalid move. Try again. Utility.cpp" << std::endl;
-	    return false;
-	}
-	board[row][col] = player;
-	return true;
-}
-
 bool checkWin(const std::vector<std::vector<char>>& board)
 {
 	// Check rows, columns, and diagonals
@@ -79,7 +81,7 @@ bool checkWin(const std::vector<std::vector<char>>& board)
 	}
 	return false;
 }
-
+// A unified function to send data to clients
 void sendData(const int clientSocket1, const int clientSocket2, char player1, char player2, std::string& board)
 {
 	std::string board1 = board + "\nServer: Player " +  std::string(1,player1) + " make move:";
@@ -88,83 +90,158 @@ void sendData(const int clientSocket1, const int clientSocket2, char player1, ch
 	send(clientSocket2, board2.c_str(), board2.size(), 0);
 }
 
-void play(int clientSocket1, int clientSocket2, TicTacToe& game)
-{
-	bool flag = true;
-	bool gameOver{false};
-	std::string board;
-	while (!gameOver) {
-		board = game.displayBoard();
-		std::cout << board << std::endl;
-		char buffer[1024];
-		int row{}, col{};
-		if (flag) {
-			flag = false;
-			sendData(clientSocket1, clientSocket2, 'X', 'O', board);
-			recvData(clientSocket1, buffer, sizeof(buffer));
-			toInt(std::string(buffer), row, col);
-			game.makeMove(row, col, 'X', gameOver);
-			send(clientSocket2, buffer, sizeof(buffer), 0);
-		} else {
-			flag = true;
-			sendData(clientSocket2, clientSocket1, 'O', 'X', board);
-			recvData(clientSocket2, buffer, sizeof(buffer));
-			toInt(std::string(buffer), row, col);
-			game.makeMove(row, col,'O', gameOver);
-			send(clientSocket1, buffer, sizeof(buffer), 0);
-		}
-		system("clear");
-		board = game.displayBoard();
-	}
-	std::cout << board << std::endl;
-	
-	std::cout << "\n__GAME OVER__" << std::endl;
-	send(clientSocket1, board.c_str(), board.size(), 0);
-	send(clientSocket2, board.c_str(), board.size(), 0);
-}
-
 void sendRecv(int client, std::vector<std::vector<char>>& board, const char player)
 {
-	bool gameOver{false};
-	char buffer[1024];
-	char winner{};
-	while (!gameOver) {
-		char buffeddr[1024];
-		recvData(client, buffer, sizeof(buffer));
-		system("clear");
-		std::cout << buffer << std::endl;
-		size_t last = std::strlen(buffer);
-		if (last > 0 && buffer[last -1] == ':') {
-			std::string message;
-			do {
-				std::getline(std::cin, message);
-				if (message == "exit") break;
-			} while (!processMove(message, board, player));
-			send(client, message.c_str(), message.size(), 0);
-			if (message == "exit") break;
-			gameOver = checkWin(board);
-			if (gameOver) {
-				winner = player;
-			}
-		} else {
-			recvData(client, buffer, sizeof(buffer));
-			char player2 = (player == 'X' ? 'O' : 'X');
-			std::cout << player2 << "  made a move " << std::endl;
-			std::string tmp = std::string(buffer); 
-			processMove(tmp, board, player2);
-			gameOver = checkWin(board);
-			if (gameOver) {
-				winner = player2;
-			}
-		}
-	}
-	recvData(client, buffer, sizeof(buffer));
-	system("clear");
-	std::cout << buffer << std::endl;
-	if (winner == player) {
-		std::cout << "___You won___" << std::endl;
-	} else {
-		std::cout << "___You lose___" << std::endl;
-	}
-	std::cout << "__GAME OVER__" << std::endl;
+    bool gameOver{false};  // A flag to track if the game is over
+    char buffer[1024];     // Buffer for receiving and sending data
+    char winner{};         // To store the winner of the game (initially empty)
+
+    while (!gameOver) {
+        char buffeddr[1024];
+
+        // Receive data from the client and clear the terminal
+        recvData(client, buffer, sizeof(buffer));
+        system("clear");
+
+        // Display the received data
+        std::cout << buffer << std::endl;
+
+        // Determine the last character received
+        size_t last = std::strlen(buffer);
+
+        // Check if the received data indicates the player's turn
+        if (last > 0 && buffer[last - 1] == ':') {
+            std::string message;
+            do {
+                std::getline(std::cin, message);
+                if (message == "exit") break;
+            } while (!processMove(message, board, player));
+
+            // Send the player's move to the client
+            send(client, message.c_str(), message.size(), 0);
+
+            if (message == "exit") break;
+
+            // Check if the game is over due to a win
+            gameOver = checkWin(board);
+
+            if (gameOver) {
+                winner = player;
+            }
+        } else {
+            // Receive data indicating the other player's move
+            recvData(client, buffer, sizeof(buffer));
+            char player2 = (player == 'X' ? 'O' : 'X');
+            std::cout << player2 << "  made a move " << std::endl;
+
+            // Process the received move
+            std::string tmp = std::string(buffer);
+            processMove(tmp, board, player2);
+
+            // Check if the game is over due to a win
+            gameOver = checkWin(board);
+
+            if (gameOver) {
+                winner = player2;
+            }
+        }
+    }
+
+    // Receive final data and clear the terminal
+    recvData(client, buffer, sizeof(buffer));
+    system("clear");
+
+    // Display the final data
+    std::cout << buffer << std::endl;
+
+    // Display the game result
+    if (winner == player) {
+        std::cout << "___You won___" << std::endl;
+    } else {
+        std::cout << "___You lose___" << std::endl;
+    }
+    std::cout << "__GAME OVER__" << std::endl;
 }
+bool processMove(const std::string& input, std::vector<std::vector<char>>& board, const char player)
+{
+    int row{}, col{};
+    
+    // Try to convert the input string to row and col using 'toInt' function
+    if (!toInt(input, row, col)) {
+        return false; // If conversion fails, the input is invalid
+    }
+    
+    // Check if the row and col values are within the valid range and the cell is not already occupied
+    if (row < 0 || row >= 3 || col < 0 || col >= 3 || board[row][col] != ' ') {
+        std::cout << "Invalid move. Try again. Utility.cpp" << std::endl;
+        return false; // If move is invalid, return false
+    }
+    
+    // Update the game board with the player's move
+    board[row][col] = player;
+
+    return true; // Return true to indicate a successful move
+}
+
+
+void play(int clientSocket1, int clientSocket2, TicTacToe& game)
+{
+    bool flag = true; // A flag to determine the current player (true for player 1, false for player 2)
+    bool gameOver{false}; // A flag to track if the game is over
+    std::string board; // A string to hold the current game board
+
+    while (!gameOver) {
+        board = game.displayBoard(); // Get the current state of the game board
+        std::cout << board << std::endl;
+
+        char buffer[1024]; // A buffer for sending and receiving data
+        int row{}, col{}; // Variables to store the row and column of the player's move
+
+        if (flag) {
+            flag = false;
+
+            // Send data to player 1 and receive their move
+            sendData(clientSocket1, clientSocket2, 'X', 'O', board);
+            recvData(clientSocket1, buffer, sizeof(buffer));
+
+            // Convert the received data to row and column
+            toInt(std::string(buffer), row, col);
+
+            // Make the move on the game board for player 1 (X)
+            game.makeMove(row, col, 'X', gameOver);
+
+            // Send player 1's move to player 2
+            send(clientSocket2, buffer, sizeof(buffer), 0);
+        } else {
+            flag = true;
+
+            // Send data to player 2 and receive their move
+            sendData(clientSocket2, clientSocket1, 'O', 'X', board);
+            recvData(clientSocket2, buffer, sizeof(buffer));
+
+            // Convert the received data to row and column
+            toInt(std::string(buffer), row, col);
+
+            // Make the move on the game board for player 2 (O)
+            game.makeMove(row, col, 'O', gameOver);
+
+            // Send player 2's move to player 1
+            send(clientSocket1, buffer, sizeof(buffer), 0);
+        }
+
+        system("clear"); // Clear the terminal
+
+        board = game.displayBoard(); // Get the updated game board
+    }
+
+    // Display the final game board
+    std::cout << board << std::endl;
+
+    // Display a game over message
+    std::cout << "\n__GAME OVER__" << std::endl;
+
+    // Send the final game board to both players
+    send(clientSocket1, board.c_str(), board.size(), 0);
+    send(clientSocket2, board.c_str(), board.size(), 0);
+}
+
