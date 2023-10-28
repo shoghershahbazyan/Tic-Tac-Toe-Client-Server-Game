@@ -38,15 +38,16 @@ Usage
 To play this console-based Tic-Tac-Toe game, follow these steps:
 
 1. Download the Files:
-Download all the files in this repository to your computer.
+- Download all the files in this repository to your computer.
 server.cpp
 client.cpp
 utility.h
 game.h
 utility.cpp
 game.cpp
+
 2. Compile the Source Code:
-Open a terminal and navigate to the directory where you have saved the files.
+- Open a terminal and navigate to the directory where you have saved the files.
 ```
 g++ -c server.cpp -o server.o
 g++ -c client.cpp -o client.o
@@ -59,21 +60,21 @@ g++ server.o utility.o game.o -o server
 g++ client.o utility.o game.o -o client
 ```
 4. Run the Server:
-  Start the server by running the following command:
+-  Start the server by running the following command:
 ` ./server`
-  The server will wait for two players to connect in order to start the game.
+-  The server will wait for two players to connect in order to start the game.
 
 5. Run the Clients:
-  Players need to join the game by running the following command from separate terminals:
+ - Players need to join the game by running the following command from separate terminals:
 `./client`
-  The server will wait for the clients to confirm they are ready to play.
+-  The server will wait for the clients to confirm they are ready to play.
 6. Game Start Confirmation:
-  The server will prompt the players with the following message:
+-  The server will prompt the players with the following message:
 `Server: Game request: Are you ready to play? (Type 'yes' or 'no')`
 
 7. Gameplay:
-  The game board will be displayed, and players take turns to make their moves.
-  The game continues until one of the players wins or a draw occurs.
+-  The game board will be displayed, and players take turns to make their moves.
+-  The game continues until one of the players wins or a draw occurs.
 ```
 -------------
 |   |   |   | 
