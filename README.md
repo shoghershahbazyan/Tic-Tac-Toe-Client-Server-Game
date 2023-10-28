@@ -4,7 +4,7 @@ Tic-Tac-Toe Console Game
 ## Game description
 
 ### Game Board and Display:
-- [x] The game provides a 3x3 grid for playing tic-tac-toe.
+- [*] The game provides a 3x3 grid for playing tic-tac-toe.
 - [x] The grid is displayed on the console.
 - [x] The grid is labeled with row and column indices to help players select their moves.
 
