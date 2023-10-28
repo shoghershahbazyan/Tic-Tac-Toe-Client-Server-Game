@@ -1,4 +1,5 @@
-# Tic-Tac-Toe Console Game
+ # Tic-Tac-Toe
+Tic-Tac-Toe Console Game
 
 ## Game description
 
@@ -28,3 +29,68 @@
 
 ### Error Handling:
 - [x] The program handles any unexpected user inputs gracefully and provides informative error messages.
+
+## Usage
+Certainly, here's a refactored version of the usage instructions for your Tic-Tac-Toe game:
+
+Usage
+
+To play this console-based Tic-Tac-Toe game, follow these steps:
+
+1. Download the Files:
+Download all the files in this repository to your computer.
+server.cpp
+client.cpp
+utility.h
+game.h
+utility.cpp
+game.cpp
+2. Compile the Source Code:
+Open a terminal and navigate to the directory where you have saved the files.
+```
+g++ -c server.cpp -o server.o
+g++ -c client.cpp -o client.o
+g++ -c game.cpp -o game.o
+g++ -c utility.cpp -o utility.o
+```
+3. Link the Executable Files:
+```
+g++ server.o utility.o game.o -o server
+g++ client.o utility.o game.o -o client
+```
+4. Run the Server:
+  Start the server by running the following command:
+` ./server`
+  The server will wait for two players to connect in order to start the game.
+
+5. Run the Clients:
+  Players need to join the game by running the following command from separate terminals:
+`./client`
+  The server will wait for the clients to confirm they are ready to play.
+6. Game Start Confirmation:
+  The server will prompt the players with the following message:
+`Server: Game request: Are you ready to play? (Type 'yes' or 'no')`
+
+7. Gameplay:
+  The game board will be displayed, and players take turns to make their moves.
+  The game continues until one of the players wins or a draw occurs.
+```
+-------------
+|   |   |   | 
+-------------
+|   |   |   | 
+-------------
+|   |   |   | 
+-------------
+
+Server: Player X make move:
+```
+8. End of Game:
+  The game will finish when one player wins or when a draw occurs.
+  Enjoy playing the game!
+
+## Structure
+
+
+
+
